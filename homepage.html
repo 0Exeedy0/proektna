@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>AI Simulation Platform</title>
+
+<style>
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: "Segoe UI", sans-serif;
+}
+body {
+    background-color:#0f172a;
+    color: #ffffff;
+}
+nav {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 20px 8%;
+    background: rgba(15, 23, 42, 0.95);
+    border-bottom: 1px solid rgba(59,130,246,0.2);
+}
+nav ul {
+    display: flex;
+    list-style: none;
+    gap: 30px;
+}
+nav a {
+    text-decoration: none;
+    color: #cbd5e1;
+    transition: 0.3s;
+    font-weight: 500;
+}
+nav a:hover {
+    color: #3b82f6;
+}
+.hero {
+    text-align: center;
+    padding: 120px 20px;
+    background: radial-gradient(circle at top, rgba(59,130,246,0.15), transparent);
+}
+.hero h1 {
+    font-size: 3rem;
+    background: linear-gradient(90deg, #3b82f6, #8b5cf6);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+.hero h2 {
+    margin-top: 10px;
+    font-size: 1.5rem;
+    color: #cbd5e1;
+}
+.hero p {
+    margin-top: 20px;
+    font-size: 1.1rem;
+    color: #cbd5e1;
+}
+.section-title {
+    text-align: center;
+    margin: 80px 0 40px 0;
+    font-size: 2rem;
+}
+.features {
+    display: flex;
+    justify-content: center;
+    gap: 40px;
+    padding: 0 8%;
+    flex-wrap: wrap;
+    align-items: stretch; 
+}
+.features a {
+    display: flex;          
+    text-decoration: none;
+}
+.card {
+    background: #1e293b;
+    padding: 40px;
+    border-radius: 15px;
+    width: 350px;
+    text-align: center;
+    transition: 0.3s;
+    border: 1px solid rgba(139,92,246,0.2);
+
+    display: flex;              
+    flex-direction: column;
+    justify-content: space-between; 
+    height: 100%;               
+}
+.card:hover {
+    transform: translateY(-8px);
+    border-color: #3b82f6;
+}
+.card h3 {
+    margin-bottom: 15px;
+    font-size: 1.4rem;
+}
+.card p {
+    color: #cbd5e1;
+}
+.steps {
+    display: flex;
+    justify-content: center;
+    gap: 40px;
+    padding: 0 8% 80px 8%;
+    flex-wrap: wrap;
+}
+.step {
+    background: #1e293b;
+    padding: 30px;
+    border-radius: 12px;
+    width: 250px;
+    text-align: center;
+    border-left: 4px solid #3b82f6;
+}
+.step h4 {
+    margin-bottom: 10px;
+    color: #3b82f6;
+}
+.step p {
+    color: #cbd5e1;
+}
+footer {
+    text-align: center;
+    padding: 30px;
+    border-top: 1px solid rgba(59,130,246,0.2);
+    color: #cbd5e1;
+    font-size: 0.9rem;
+}
+a{
+    text-decoration: none;
+    color: white;
+}
+</style>
+</head>
+
+<body>
+<nav>
+    <div><strong>AI Simulation Platform</strong></div>
+    <ul>
+        <li><a href="homepage.html">Home</a></li>
+        <li><a href="AI_Learning_Sim.html">AI Learning Simulator</a></li>
+        <li><a href="Smart_Decision_Sim.html">Smart Decision Simulator</a></li>
+    </ul>
+</nav>
+<section class="hero">
+    <h1>Платформа за симулација на вештачка интелигенција</h1>
+    <h2>Како вештачката интелигенција учи и носи одлуки</h2>
+    <p>Истражете ја вештачката интелигенција преку интерактивни симулации.</p>
+</section>
+<h2 class="section-title">Што нуди платформата?</h2>
+<section class="features">
+    <a href="AI_Learning_Sim.html"><div class="card">
+        <h3>AI Learning Simulator</h3>
+        <p>Самоучливи автомобилски агенти напојувани од вештачка интелигенција.</p>
+    </div></a>
+
+    <a href="Smart_Decision_Sim.html"><div class="card">
+        <h3>Smart Decision Simulator</h3>
+        <p>Анализа на одлуки базирана на вештачка интелигенција за симулирање на интелигентни системи од реалниот свет.</p>
+    </div></a>
+</section>
+<h2 class="section-title">Како функционира?</h2>
+<section class="steps">
+    <div class="step">
+        <h4>Чекор 1</h4>
+        <p>Корисникот избира симулациска средина.</p>
+    </div>
+
+    <div class="step">
+        <h4>Чекор 2</h4>
+        <p>Вештачката интелигенција анализира и обработува влезни податоци.</p>
+    </div>
+
+    <div class="step">
+        <h4>Чекор 3</h4>
+        <p>Резултатите се прикажани во интерактивни визуелни формати.</p>
+    </div>
+</section>
+
+<footer>
+    Андон Георгиев • 2026 <br>
+    Проектна задача за Државна Матура
+</footer>
+
+</body>
+</html>
+

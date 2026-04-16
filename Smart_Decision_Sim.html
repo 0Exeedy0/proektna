@@ -1,0 +1,307 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>Smart Decision Simulator</title>
+
+<style>
+body{
+    margin:0;
+    font-family:'Segoe UI', sans-serif;
+    background:linear-gradient(135deg,#e0f2fe,#f0f9ff);
+    color:#1f2937;
+}
+
+nav {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 5px 8%;
+    background: rgba(15, 23, 42, 0.95);
+    border-bottom: 1px solid rgba(59,130,246,0.2);
+    color: white;
+}
+
+nav ul {
+    display: flex;
+    list-style: none;
+    gap: 30px;
+}
+
+nav a {
+    text-decoration: none;
+    color: #cbd5e1;
+    transition: 0.3s;
+    font-weight: 500;
+}
+
+nav a:hover {
+    color: #3b82f6;
+}
+
+h1{
+    text-align:center;
+    margin-top:40px;
+    font-weight:600;
+}
+
+.subtitle{
+    text-align:center;
+    color:#475569;
+    margin-bottom:40px;
+}
+
+.container{
+    display:flex;
+    justify-content:center;
+    gap:60px;
+    padding:20px;
+}
+
+.card{
+    background:white;
+    padding:30px;
+    border-radius:18px;
+    width:320px;
+    box-shadow:0 15px 35px rgba(0,0,0,0.1);
+}
+
+label{
+    display:block;
+    margin-top:15px;
+    font-size:14px;
+    color:#64748b;
+}
+
+input,select{
+    width:100%;
+    padding:8px;
+    margin-top:5px;
+    border-radius:8px;
+    border:1px solid #cbd5e1;
+}
+
+button{
+    width:100%;
+    padding:12px;
+    margin-top:25px;
+    border:none;
+    border-radius:12px;
+    background:#2563eb;
+    color:white;
+    font-weight:600;
+    cursor:pointer;
+    transition:0.2s;
+}
+
+button:hover{
+    background:#1e40af;
+}
+
+.result{
+    margin-top:20px;
+}
+
+.score-bar{
+    width:100%;
+    height:20px;
+    background:#e2e8f0;
+    border-radius:10px;
+    overflow:hidden;
+    margin-top:10px;
+}
+
+.score-fill{
+    height:100%;
+    width:0%;
+    background:linear-gradient(90deg,#22c55e,#16a34a);
+    transition:0.5s;
+}
+
+.decision{
+    margin-top:20px;
+    font-size:18px;
+    font-weight:600;
+}
+
+.explanation{
+    margin-top:15px;
+    font-size:14px;
+    color:#475569;
+}
+
+.feature{
+    margin-top:12px;
+}
+
+.feature-name{
+    font-size:13px;
+    margin-bottom:4px;
+    display:flex;
+    justify-content:space-between;
+}
+
+.feature-bar{
+    height:10px;
+    background:#e2e8f0;
+    border-radius:6px;
+    overflow:hidden;
+}
+
+.feature-fill{
+    height:100%;
+    width:0%;
+    background:linear-gradient(90deg,#3b82f6,#2563eb);
+    transition:0.6s ease;
+}
+</style>
+</head>
+
+<body>
+
+<nav>
+    <div><strong>AI Platform</strong></div>
+    <ul>
+    <li><a href="homepage.html">Home</a></li>
+    <li><a href="AI_Learning_Sim.html">AI Learning Simulator</a></li>
+    <li><a href="Smart_Decision_Sim.html">Smart Decision Simulator</a></li>
+    </ul>
+
+</nav>
+
+<h1>Smart Decision Simulator</h1>
+<p class="subtitle">Систем за одобрување на кредити со вештачка интелигенција (модел на тежинско бодување)</p>
+<div class="container">
+<div class="card">
+<h3>Податоци за кандидатот</h3>
+<label>Возраст</label>
+<input type="number" id="age" value="30">
+<label>Месечен приход (€)</label>
+<input type="number" id="income" value="1200">
+<label>Кредитна историја</label>
+<select id="credit">
+<option value="good">Добра</option>
+<option value="bad">Лоша</option>
+</select>
+<label>Постоечки долгови (€)</label>
+<input type="number" id="debt" value="200">
+<label>Статус на вработување</label>
+<select id="employment">
+<option value="employed">Вработен</option>
+<option value="self">Самовработен</option>
+<option value="unemployed">Невработен</option>
+</select>
+<button onclick="calculateDecision()">Изврши анализа со ВИ</button>
+</div>
+
+<div class="card">
+<h3>Анализа на одлуки на ВИ</h3>
+
+<div class="result">
+<p><strong>Вкупен резултат:</strong> <span id="scoreValue">-</span></p>
+
+<div class="score-bar">
+<div class="score-fill" id="scoreFill"></div>
+</div>
+
+<p class="decision" id="decisionText">Одлука: -</p>
+
+<div class="explanation">
+    <div id="featureChart"></div>
+    <div id="extraInfo"></div>
+</div>
+</div>
+
+</div>
+
+</div>
+
+
+<script>
+
+function calculateDecision(){
+
+const age = parseInt(document.getElementById("age").value);
+const income = parseInt(document.getElementById("income").value);
+const credit = document.getElementById("credit").value;
+const debt = parseInt(document.getElementById("debt").value);
+const employment = document.getElementById("employment").value;
+
+let score = 0;
+let features = [];
+
+let ageScore = (age >= 21 && age <= 60) ? 15 : 0;
+score += ageScore;
+features.push({name:"Возраст", value:ageScore, max:15});
+
+let incomeScore = Math.min(income / 100, 30);
+score += incomeScore;
+features.push({name:"Приход", value:incomeScore, max:30});
+
+let creditScore = (credit === "good") ? 25 : 0;
+score += creditScore;
+features.push({name:"Кредитна историја", value:creditScore, max:25});
+
+let debtPenalty = Math.min(debt / 100, 20);
+score -= debtPenalty;
+features.push({name:"Влијание на долгот", value:-debtPenalty, max:20});
+
+let employmentScore = 0;
+if(employment === "employed") employmentScore = 20;
+else if(employment === "self") employmentScore = 10;
+
+score += employmentScore;
+features.push({name:"Вработеност", value:employmentScore, max:20});
+score = Math.max(0, Math.min(100, score));
+
+document.getElementById("scoreValue").innerText = score.toFixed(1) + " / 100";
+document.getElementById("scoreFill").style.width = score + "%";
+
+const decision = score >= 60 ? "Кредитот е одобрен" : "Кредитот е одбиен";
+const decisionText = document.getElementById("decisionText");
+decisionText.innerText = "Одлука: " + decision;
+decisionText.style.color = score >= 60 ? "#16a34a" : "#dc2626";
+
+const chart = document.getElementById("featureChart");
+chart.innerHTML = "<strong>Анализа на влијанието на карактеристиките</strong>";
+
+features.forEach(f => {
+
+    let percent = (Math.abs(f.value) / f.max) * 100;
+
+    let color = f.value >= 0 
+        ? "linear-gradient(90deg,#22c55e,#16a34a)"
+        : "linear-gradient(90deg,#ef4444,#dc2626)";
+
+    chart.innerHTML += `
+    <div class="feature">
+        <div class="feature-name">
+            <span>${f.name}</span>
+            <span>${f.value >= 0 ? "+" : ""}${f.value.toFixed(1)}</span>
+        </div>
+        <div class="feature-bar">
+            <div class="feature-fill" 
+                 style="width:${percent}%; background:${color};">
+            </div>
+        </div>
+    </div>
+    `;
+});
+
+let riskLevel;
+if(score >= 80) riskLevel = "Низок ризик";
+else if(score >= 60) riskLevel = "Среден ризик";
+else riskLevel = "Висок ризик";
+
+let confidence = score + (Math.random()*6 - 3);
+confidence = Math.max(55, Math.min(99, confidence));
+
+document.getElementById("extraInfo").innerHTML =
+    `<br><b>Категорија на ризик:</b> ${riskLevel}
+     <br><b>Доверба во ВИ:</b> ${confidence.toFixed(1)}%`;
+}
+
+</script>
+
+</body>
+</html>

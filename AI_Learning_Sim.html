@@ -1,0 +1,463 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>AI Learning Simulator</title>
+<style>
+body{
+    margin:0;
+    font-family: 'Segoe UI', sans-serif;
+    background:#f3f4f6;
+    color:#1f2937;
+}
+
+nav {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 5px 8%;
+    background: rgba(15, 23, 42, 0.95);
+    border-bottom: 1px solid rgba(59,130,246,0.2);
+    color: white;
+}
+
+nav ul {
+    display: flex;
+    list-style: none;
+    gap: 30px;
+}
+
+nav a {
+    text-decoration: none;
+    color: #cbd5e1;
+    transition: 0.3s;
+    font-weight: 500;
+}
+
+nav a:hover {
+    color: #3b82f6;
+}
+
+h1{
+    text-align:center;
+    margin-top:30px;
+    font-weight:600;
+}
+
+.subtitle{
+    text-align:center;
+    color:#6b7280;
+    margin-bottom:30px;
+}
+
+.container{
+    display:flex;
+    justify-content:center;
+    gap:40px;
+    padding:20px;
+}
+
+canvas{
+    background:#87c77b;
+    border-radius:16px;
+    box-shadow:0 10px 30px rgba(0,0,0,0.15);
+}
+
+.controls{
+    background:white;
+    padding:25px;
+    border-radius:16px;
+    width:230px;
+    box-shadow:0 10px 25px rgba(0,0,0,0.1);
+}
+
+button{
+    width:100%;
+    padding:10px;
+    margin-top:10px;
+    border:none;
+    border-radius:10px;
+    background:#2563eb;
+    color:white;
+    font-weight:500;
+    cursor:pointer;
+    transition:0.2s;
+}
+
+button:hover{
+    background:#1e40af;
+}
+
+input{
+    width:100%;
+    margin-top:10px;
+}
+
+label{
+    margin-top:15px;
+    display:block;
+    font-size:14px;
+    color:#6b7280;
+}
+
+</style>
+</head>
+<body>
+
+<nav>
+    <div><strong>AI Simulation Platform</strong></div>
+    <ul>
+        <li><a href="homepage.html">Home</a></li>
+        <li><a href="AI_Learning_Sim.html">AI Learning Simulator</a></li>
+        <li><a href="Smart_Decision_Sim.html">Smart Decision Simulator</a></li>
+    </ul>
+</nav>
+
+<h1>AI Learning Simulator</h1>
+<div class="container">
+    
+<canvas id="canvas" width="600" height="500"></canvas>
+
+<div class="controls">
+<button onclick="start()">Start</button>
+<button onclick="reset()">Reset</button>
+
+<label>Speed</label>
+<input type="range" id="speed" min="1" max="10" value="1">
+
+<p>Generation: <span id="gen">0</span></p>
+<p>Best Fitness: <span id="bestFitness">0</span></p>
+
+<p>Weights:<span id="weights"></span></p>
+
+</div>
+</div>
+<div style="width:700px;margin:40px auto;text-align:center;">
+    <h2>Training Progress</h2>
+    <canvas id="graph" width="700" height="200" 
+            style="background:white;border-radius:12px;box-shadow:0 5px 15px rgba(0,0,0,0.1);">
+    </canvas>
+
+    <p style="margin-top:20px;color:#555;max-width:700px;margin-left:auto;margin-right:auto;">
+        Автомобилите со вештачка интелигенција користат три сензори за растојание за откривање на границите на патеките.
+        Секоја генерација го избира автомобилот со најдобри перформанси врз основа на кондицијата
+        (растојание поминато напред). Најдобрите невронски тежини се копираат
+        и малку мутираат за да се создаде следната генерација.
+        Со текот на времето, овој еволутивен процес го подобрува однесувањето при возење.
+    </p>
+</div>
+
+<script>
+const canvas=document.getElementById("canvas");
+const ctx=canvas.getContext("2d");
+
+let cars=[];
+let generation=1;
+let animation;
+let speed=1;
+let frameCounter = 0;
+let fitnessHistory = [];
+const graphCanvas = document.getElementById("graph");
+const gctx = graphCanvas.getContext("2d");
+
+const track={
+    outer:{x:50,y:50,w:500,h:400},
+    inner:{x:200,y:150,w:200,h:200}
+};
+
+class Car{
+    constructor(brain=null){
+        this.x = 300;
+        this.y = 420;
+        this.angle=-Math.PI/2;
+        this.speed=2;
+        this.alive=true;
+        this.fitness=0;
+
+        this.brain=brain||{
+            w:[
+                Math.random()*2-1,
+                Math.random()*2-1,
+                Math.random()*2-1
+            ]
+        };
+    }
+
+    mutate(){
+        this.brain.w=this.brain.w.map(w=>w+(Math.random()-0.5)*0.8);
+    }
+
+    sensors(){
+        const angles=[-0.6,0,0.6];
+        return angles.map(a=>ray(this.x,this.y,this.angle+a));
+    }
+
+    think(inputs){
+        let sum=0;
+        for(let i=0;i<3;i++){
+            sum+=inputs[i]*this.brain.w[i];
+        }
+        return sum;
+    }
+
+    update(){
+    if(!this.alive) return;
+
+    this.sensorAngles = [-0.6, 0, 0.6];
+    this.sensorReadings = this.sensorAngles.map(a =>
+        ray(this.x, this.y, this.angle + a)
+    );
+
+    const turn = this.think(this.sensorReadings);
+
+    this.angle += turn * 0.08;
+
+    this.x += Math.cos(this.angle) * this.speed;
+    this.y += Math.sin(this.angle) * this.speed;
+
+    this.fitness += (420 - this.y);
+
+    if(!onTrack(this.x,this.y)){
+        this.alive = false;
+    }
+}
+
+    draw(best=false){
+    if(!this.alive) return;
+
+    ctx.save();
+    ctx.translate(this.x,this.y);
+    ctx.rotate(this.angle - Math.PI/2);
+
+    ctx.fillStyle = best ? "#16a34a" : "#FF2800";
+
+    ctx.beginPath();
+    ctx.roundRect(-8,-14,16,28,6);
+    ctx.fill();
+
+
+    ctx.fillStyle="black";
+    ctx.fillRect(-10,-10,4,8);
+    ctx.fillRect(6,-10,4,8);
+    ctx.fillRect(-10,4,4,8);
+    ctx.fillRect(6,4,4,8);
+
+    ctx.restore();
+
+    if(best && this.sensorReadings){
+        ctx.lineWidth = 3;
+        ctx.strokeStyle = "yellow";
+
+        for(let i=0;i<this.sensorAngles.length;i++){
+            const angle = this.angle + this.sensorAngles[i];
+            const distance = this.sensorReadings[i] * 100;
+
+            const endX = this.x + Math.cos(angle) * distance;
+            const endY = this.y + Math.sin(angle) * distance;
+
+            ctx.beginPath();
+            ctx.moveTo(this.x, this.y);
+            ctx.lineTo(endX, endY);
+            ctx.stroke();
+        }
+    }
+    
+    }
+}
+
+function ray(x,y,angle){
+    let dist=0;
+    while(dist<100){
+        const tx=x+Math.cos(angle)*dist;
+        const ty=y+Math.sin(angle)*dist;
+        if(!onTrack(tx,ty)) return dist/100;
+        dist+=5;
+    }
+    return 1;
+}
+
+function drawSensorRay(x,y,angle){
+    let dist=0;
+    while(dist<100){
+        const tx=x+Math.cos(angle)*dist;
+        const ty=y+Math.sin(angle)*dist;
+
+        if(!onTrack(tx,ty)){
+            ctx.beginPath();
+            ctx.moveTo(x,y);
+            ctx.lineTo(tx,ty);
+            ctx.strokeStyle="yellow";
+            ctx.lineWidth=2;
+            ctx.stroke();
+            return;
+        }
+
+        dist+=5;
+    }
+}
+
+
+function onTrack(x,y){
+    const o=track.outer;
+    const i=track.inner;
+
+    const outer=x>o.x&&x<o.x+o.w&&y>o.y&&y<o.y+o.h;
+    const inner=x>i.x&&x<i.x+i.w&&y>i.y&&y<i.y+i.h;
+
+    return outer&&!inner;
+}
+
+function drawTrack(){
+    ctx.clearRect(0,0,canvas.width,canvas.height);
+
+    const radius=40
+
+    ctx.fillStyle="#4b5563";
+    ctx.beginPath();
+    ctx.roundRect(track.outer.x,track.outer.y,track.outer.w,track.outer.h,radius);
+    ctx.fill();
+
+    ctx.fillStyle="#87c77b";
+    ctx.beginPath();
+    ctx.roundRect(track.inner.x,track.inner.y,track.inner.w,track.inner.h,radius);
+    ctx.fill();
+
+    ctx.lineWidth=6;
+    ctx.strokeStyle="white";
+    ctx.beginPath();
+    ctx.roundRect(track.outer.x,track.outer.y,track.outer.w,track.outer.h,radius);
+    ctx.roundRect(track.inner.x,track.inner.y,track.inner.w,track.inner.h,radius);
+    ctx.stroke();
+
+
+    ctx.lineWidth=4;
+    ctx.strokeStyle="red";
+    ctx.beginPath();
+    ctx.setLineDash([10,10]);
+    ctx.roundRect(track.outer.x,track.outer.y,track.outer.w,track.outer.h,radius);
+    ctx.roundRect(track.inner.x,track.inner.y,track.inner.w,track.inner.h,radius);
+    ctx.stroke();
+
+    ctx.setLineDash([]);
+
+    for(let i=0;i<8;i++){
+        ctx.fillStyle = i%2==0 ? "white" : "black";
+        ctx.fillRect(285,355+i*10,30,15);
+    }
+}
+
+function drawGraph(){
+    gctx.clearRect(0,0,graphCanvas.width,graphCanvas.height);
+
+    if(fitnessHistory.length < 2) return;
+
+    const maxFitness = Math.max(...fitnessHistory);
+    const padding = 30;
+    const width = graphCanvas.width - padding*2;
+    const height = graphCanvas.height - padding*2;
+
+    gctx.beginPath();
+    gctx.moveTo(padding, graphCanvas.height - padding);
+
+    fitnessHistory.forEach((fit, i)=>{
+        const x = padding + (i/(fitnessHistory.length-1)) * width;
+        const y = graphCanvas.height - padding - (fit/maxFitness) * height;
+        gctx.lineTo(x,y);
+    });
+
+    gctx.strokeStyle = "#2563eb";
+    gctx.lineWidth = 2;
+    gctx.stroke();
+
+    gctx.strokeStyle = "#ccc";
+    gctx.lineWidth = 1;
+    gctx.beginPath();
+    gctx.moveTo(padding,padding);
+    gctx.lineTo(padding,graphCanvas.height-padding);
+    gctx.lineTo(graphCanvas.width-padding,graphCanvas.height-padding);
+    gctx.stroke();
+}
+
+function generate(n=50){
+    cars=[];
+    for(let i=0;i<n;i++){
+        cars.push(new Car());
+    }
+}
+
+function evolve(){
+    cars.sort((a,b)=>b.fitness-a.fitness);
+    const best=cars[0];
+
+    fitnessHistory.push(best.fitness);
+    document.getElementById("bestFitness").textContent = Math.round(best.fitness);
+
+    drawGraph();
+
+    let next=[];
+    for(let i=0;i<50;i++){
+        const child=new Car(JSON.parse(JSON.stringify(best.brain)));
+        if(i!==0) child.mutate();
+        next.push(child);
+    }
+
+    cars=next;
+    generation++;
+    document.getElementById("gen").textContent=generation;
+    document.getElementById("weights").textContent =
+    best.brain.w.map(w=>w.toFixed(2)).join(", ");
+}
+
+
+
+function loop(){
+    drawTrack();
+
+    for(let i=0;i<speed;i++){
+        cars.forEach(c=>c.update());
+    }
+
+    cars.forEach((c,i)=>c.draw(i===0));
+
+    if(cars.every(c=>!c.alive)){
+    evolve();
+}
+
+    frameCounter++;
+
+    if(frameCounter > 5000){
+        evolve();
+        frameCounter = 0;
+    }
+
+    animation=requestAnimationFrame(loop);
+}
+
+function start(){
+    cancelAnimationFrame(animation);
+    generate();
+    loop();
+}
+
+function reset(){
+    cancelAnimationFrame(animation);
+    generation=0;
+    document.getElementById("gen").textContent=generation;
+    fitnessHistory = [];
+    if(document.getElementById("bestFitness")){
+        document.getElementById("bestFitness").textContent = 0;}
+    gctx.clearRect(0, 0, graphCanvas.width, graphCanvas.height);
+    generate();
+    drawTrack();
+}
+
+document.getElementById("speed").addEventListener("input",e=>{
+    speed=parseInt(e.target.value);
+});
+
+generate();
+drawTrack();
+</script>
+
+</body>
+</html>
